@@ -1,0 +1,155 @@
+syntax = "proto3";
+package dcos.metronome;
+
+option java_package = "dcos.metronome";
+option java_outer_classname = "Protos";
+
+message JobHistory {
+  string job_spec_id = 1;
+  int32 success_count = 2;
+  int32 failure_count = 3;
+  string last_success_at = 4;
+  string last_failure_at = 5;
+
+  message JobRunInfo {
+    string job_run_id = 1;
+    string created_at = 2;
+    string finishedAt = 3;
+  }
+  repeated JobRunInfo successful_runs = 6;
+  repeated JobRunInfo failed_runs = 7;
+}
+
+message JobRun {
+  string id = 1;
+  string jobId = 2;
+
+  enum Status {
+    INITIAL = 0;
+    STARTING = 1;
+    ACTIVE = 2;
+    SUCCESS = 3;
+    FAILED = 4;
+  }
+  Status status = 3;
+
+  string createdAt = 4;
+  string completedAt = 5;
+
+  message JobRunTask {
+    enum Status {
+      UNKNOWN = 0;
+      TASK_CREATED = 1;
+      TASK_STAGING = 2;
+      TASK_STARTING = 3;
+      TASK_RUNNING = 4;
+      TASK_FINISHED = 5;
+      TASK_FAILED = 6;
+      TASK_KILLED = 7;
+    }
+
+    string id = 1;
+    string startedAt = 2;
+    string completedAt = 3;
+    Status status = 4;
+  }
+  repeated JobRunTask tasks = 6;
+}
+
+message ScheduleSpec {
+  string id = 1;
+  string cron = 2;
+  string timezone = 3;
+  int32 startingDeadlineSeconds = 4;
+  enum ConcurrencyPolicy {
+    UNKNOWN = 0;
+    ALLOW = 1;
+  }
+  ConcurrencyPolicy concurrencyPolicy = 5;
+  bool enabled = 6;
+}
+
+message JobSpec {
+  string id = 1;
+  string description = 2;
+  map<string, string> labels = 3;
+
+  message RunSpec {
+    double cpus = 1;
+    double mem = 2;
+    double disk = 3;
+    string cmd = 4;
+    repeated string args = 5;
+    string user = 6;
+    map<string, string> env = 7;
+
+    message PlacementSpec {
+      message Constraint {
+        string attribute = 1;
+
+        enum Operator {
+          UNKNOWN = 0;
+          // Tasks will be clustered, i.e. all tasks need to have the same value. If value is not set, any value will be
+          // accepted for the first task, and subsequent tasks must use that same value.
+          EQ = 1;
+          // Field must match the regex given by value.
+          LIKE = 2;
+          // Field must not match the regex given by value.
+          UNLIKE = 3;
+        }
+        Operator operator = 2;
+        string value = 3;
+      }
+
+      repeated Constraint constraints = 1;
+    }
+    PlacementSpec placement = 8;
+
+    message Artifact {
+      string uri = 1;
+      bool extract = 2;
+      bool executable = 3;
+      bool cache = 4;
+    }
+    repeated Artifact artifacts = 9;
+
+    int32 maxLaunchDelay = 10;
+
+    message DockerSpec {
+      string image = 1;
+    }
+    DockerSpec docker = 11;
+
+    message Volume {
+      // Path pointing to a directory or file in the container. If the
+      // path is a relative path, it is relative to the container work
+      // directory. If the path is an absolute path, that path must
+      // already exist.
+      string containerPath = 1;
+
+      // Absolute path pointing to a directory or file on the host or a
+      // path relative to the container work directory.
+      string hostPath = 2;
+
+      enum Mode {
+        UNKNOWN = 0;
+        RO = 1; // read-only.
+        RW = 2; // read-write.
+      }
+      Mode mode = 3;
+    }
+    repeated Volume volumes = 12;
+
+    message RestartSpec {
+      enum RestartPolicy {
+        UNKNOWN = 0;
+        NEVER = 1;
+        ON_FAILURE = 2;
+      }
+      RestartPolicy policy = 1;
+      int32 activeDeadlineSeconds = 2;
+    }
+    RestartSpec restart = 13;
+  }
+  RunSpec run = 4;
+}

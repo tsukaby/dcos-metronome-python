@@ -1,0 +1,20 @@
+machine:
+  post:
+    - pyenv global 2.7.12 3.3.6
+  environment:
+    TOXENV: circleci, flake8
+
+dependencies:
+  pre:
+    - curl -L -o ~/protoc.zip https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip
+    - unzip ~/protoc.zip
+    - sudo mv bin/protoc /usr/bin/
+  override:
+    - pip install -r requirements.txt
+    - pip install tox
+  cache_directories:
+    - "~/.cache/pip"
+
+test:
+  override:
+    - make test
