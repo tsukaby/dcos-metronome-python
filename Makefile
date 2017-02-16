@@ -15,7 +15,7 @@ test: codegen
 clean:
 	rm -rf dist/ build/
 
-package: clean
+package: clean codegen
 	pip install wheel
 	python setup.py sdist bdist_wheel
 
