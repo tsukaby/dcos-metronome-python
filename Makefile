@@ -22,6 +22,5 @@ package: clean
 publish: package
 	pip install twine
 	twine upload dist/*
-	github_changelog_generator
 
 .PHONY: codegen itests test clean package publish
