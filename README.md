@@ -7,18 +7,12 @@ This library inspired by [thefactory/marathon-python](https://github.com/thefact
 
 #### Compatibility
 
-* For Metronome 0.2.0, use at lease dcos-metronome-python 0.1.0
+* For Metronome 0.2.0, use at lease dcos-metronome-python 0.0.3
 
 ## Installation
 
-TODO
-
-## Testing 
-
-### Running The Tests
-
 ```bash
-make itests
+pip install dcos-metronome
 ```
 
 ## Documentation
@@ -39,25 +33,105 @@ Create a `MetronomeClient()` instance pointing at your Metronome server(s):
 Then try calling some methods:
 ```python
 >>> c.list_jobs()
-TODO
+[id: "example"
+description: "Example Job"
+labels {
+  key: "location"
+  value: "olympus"
+}
+...
+]
 ```
 
-TODO other methods
+Create job
+
+```python
+>>> json_text = """{"description":"desc","id":"example","labels":{},"run":{"artifacts":[],"cmd":"example","cpus":0.1,"disk":0,"env":{},"maxLaunchDelay":3600,"mem":32,"restart":{"activeDeadlineSeconds":120,"policy":"NEVER"},"volumes":[]}}"""
+>>> job = Parse(json_text, JobSpec())
+>>> c.create_job(job)
+id: "example"
+description: "desc"
+run {
+  cpus: 0.1
+  mem: 32.0
+  cmd: "example"
+  placement {
+  }
+  maxLaunchDelay: 3600
+  restart {
+    policy: NEVER
+    activeDeadlineSeconds: 120
+  }
+}
+```
+
+***Other methods***
+
+- create_job
+- list_jobs
+- get_job
+- update_job
+- delete_job
+- create_schedule
+- list_schedules
+- get_schedule
+- update_schedule
+- delete_schedule
+- run_job
+- list_runs
+- get_run
+- stop_job
+- ping
+
+See following code for details.
+
+[client.py](metronome/client.py)
 
 ## Development
 
-### Create/Update models by Protocol buffer
+### Setup
 
-```
+```bash
 brew install protobuf
 # protoc --version
 # libprotoc 3.2.0
 
+pip install -r requirements.txt
+pip install tox
+```
+
+### Testing
+
+#### Unit tests
+
+```bash
+make tests
+```
+
+#### Integration tests
+
+```bash
+make itests
+```
+
+### Create/Update models by Protocol buffer
+
+```
 # edit protobuf/metronome.proto
 make codegen
 ```
 
-TODO
+### Package
+
+```bash
+make package
+```
+
+### Publish (for owner only)
+
+```bash
+make publish
+```
 
 # License
 
