@@ -1,27 +1,10 @@
 import copy
-import time
 
-import metronome
-from metronome import models
-from metronome.exceptions import MetronomeHttpError
-from behave import given, when, then
-from itest_utils import get_metronome_connection_string
+from behave import when, then
 from google.protobuf.json_format import Parse
 
-
-@given(u'a working metronome instance')
-def step_impl(context):
-    """Adds a working metronome client as context.client for the purposes of
-    interacting with it in the test."""
-    if not hasattr(context, 'client'):
-        metronome_connection_string = "http://%s" % \
-                                     get_metronome_connection_string()
-        context.client = metronome.MetronomeClient(metronome_connection_string)
-
-
-@then(u'we get the metronome pong')
-def step_impl(context):
-    assert context.client.ping() == 'pong'
+from metronome import models
+from metronome.exceptions import MetronomeHttpError
 
 
 @when(u'we create a trivial new job')
@@ -33,7 +16,8 @@ def step_impl(context):
   "labels": {},
   "run": {
     "artifacts": [],
-    "cmd": "echo hello",
+    "cmd": "echo",
+    "args": ["hello"],
     "cpus": 0.1,
     "disk": 0,
     "maxLaunchDelay": 3600,
@@ -42,6 +26,7 @@ def step_impl(context):
       "activeDeadlineSeconds": 120,
       "policy": "NEVER"
     },
+    "user": "root",
     "volumes": []
   }
 }
@@ -52,10 +37,10 @@ def step_impl(context):
 
 @then(u'we should see the trivial job running via the metronome api')
 def step_impl(context):
-    time.sleep(5)
     actual = context.client.get_job(job_id='example.trivial')
     assert actual.id == 'example.trivial'
-    assert actual.run.cmd == 'echo hello'
+    assert actual.run.cmd == 'echo'
+    assert actual.run.args[0] == 'hello'
     assert actual.run.restart.activeDeadlineSeconds == 120
 
 
@@ -120,7 +105,6 @@ def step_impl(context):
 
 @then(u'we should see the complex job running via the metronome api')
 def step_impl(context):
-    time.sleep(5)
     actual = context.client.get_job(job_id='example.complex')
     expected = models.JobSpec()
     expected.id = 'example.complex'
@@ -159,7 +143,6 @@ def step_impl(context):
 
 @then(u'we should update a above job via the metronome api')
 def step_impl(context):
-    time.sleep(5)
     before = context.client.get_job(job_id='example.trivial')
     for_update = copy.deepcopy([before])[0]
     expected = 'desc_updated'
@@ -172,7 +155,6 @@ def step_impl(context):
 
 @then(u'we should delete a job via the metronome api')
 def step_impl(context):
-    time.sleep(5)
     status_code = context.client.delete_job(job_id='example.trivial').status_code
     assert status_code == 200
 

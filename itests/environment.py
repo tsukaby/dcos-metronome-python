@@ -15,5 +15,5 @@ def after_scenario(context, scenario):
             if not jobs:
                 break
             for job in jobs:
-                context.client.delete_job(job.id)
+                context.client.delete_job(job.id, stop_current_job_runs=True)
             time.sleep(0.5)
