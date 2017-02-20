@@ -49,7 +49,11 @@ class MetronomeClient(object):
     def _do_request(self, method, path, params=None, data=None):
         """Query Metronome server."""
         headers = {
-            'Content-Type': 'application/json', 'Accept': 'application/json'}
+            'Accept': 'application/json'
+        }
+
+        if data is not None:
+            headers['Content-Type'] = 'application/json'
 
         if self.auth_token:
             headers['Authorization'] = "token={}".format(self.auth_token)
@@ -99,33 +103,24 @@ class MetronomeClient(object):
         else:
             return False
 
-    def list_jobs(self, embed_active_runs=False, embed_schedules=False, embed_history=False,
-                  embed_history_summary=False):
-        params = {}
-        embed_params = {
-            'activeRuns': embed_active_runs,
-            'schedules': embed_schedules,
-            'history': embed_history,
-            'historySummary': embed_history_summary
+    def list_jobs(self, active_runs=False, schedules=False, history=False, history_summary=False):
+        params = {
+            'activeRuns': str(active_runs).lower(),
+            'schedules': str(schedules).lower(),
+            'history': str(history).lower(),
+            'historySummary': str(history_summary).lower()
         }
-        filtered_embed_params = [k for (k, v) in embed_params.items() if v]
-        if filtered_embed_params:
-            params['embed'] = filtered_embed_params
         response = self._do_request('GET', '/v1/jobs', params=params)
         jobs = self._parse_response(
             response, JobSpec, is_list=True)
         return jobs
 
-    def get_job(self, job_id, embed_active_runs=False, embed_schedules=False, embed_history_summary=False):
-        params = {}
-        embed_params = {
-            'activeRuns': embed_active_runs,
-            'schedules': embed_schedules,
-            'historySummary': embed_history_summary
+    def get_job(self, job_id, active_runs=False, schedules=False, history_summary=False):
+        params = {
+            'activeRuns': str(active_runs).lower(),
+            'schedules': str(schedules).lower(),
+            'historySummary': str(history_summary).lower()
         }
-        filtered_embed_params = [k for (k, v) in embed_params.items() if v]
-        if filtered_embed_params:
-            params['embed'] = filtered_embed_params
         response = self._do_request('GET', '/v1/jobs/{job_id}'.format(job_id=job_id), params=params)
         return self._parse_response(response, JobSpec)
 
@@ -137,8 +132,11 @@ class MetronomeClient(object):
         else:
             return False
 
-    def delete_job(self, job_id):
-        response = self._do_request('DELETE', '/v1/jobs/{job_id}'.format(job_id=job_id))
+    def delete_job(self, job_id, stop_current_job_runs=False):
+        params = {
+            'stopCurrentJobRuns': str(stop_current_job_runs).lower()
+        }
+        response = self._do_request('DELETE', '/v1/jobs/{job_id}'.format(job_id=job_id), params=params)
         return response
 
     def create_schedule(self, job_id, schedule):
@@ -164,14 +162,18 @@ class MetronomeClient(object):
 
     def update_schedule(self, job_id, schedule_id, schedule):
         data = MessageToJson(schedule, including_default_value_fields=True, preserving_proto_field_name=True)
-        response = self._do_request('PUT', '/v1/jobs/{job_id}/schedules/{schedule_id}'.format(job_id=job_id, schedule_id=schedule_id), data=data)
+        response = self._do_request(
+            'PUT', '/v1/jobs/{job_id}/schedules/{schedule_id}'.format(job_id=job_id, schedule_id=schedule_id), data=data
+        )
         if response.status_code == 200:
             return self._parse_response(response, ScheduleSpec)
         else:
             return False
 
     def delete_schedule(self, job_id, schedule_id):
-        response = self._do_request('DELETE', '/v1/jobs/{job_id}/schedules/{schedule_id}'.format(job_id=job_id, schedule_id=schedule_id))
+        response = self._do_request(
+            'DELETE', '/v1/jobs/{job_id}/schedules/{schedule_id}'.format(job_id=job_id, schedule_id=schedule_id)
+        )
         return response
 
     def run_job(self, job_id):
@@ -189,8 +191,11 @@ class MetronomeClient(object):
         response = self._do_request('GET', '/v1/jobs/{job_id}/runs/{run_id}'.format(job_id=job_id, run_id=run_id))
         return self._parse_response(response, JobRun)
 
-    def stop_job(self):
-        return False
+    def stop_run(self, job_id, run_id):
+        response = self._do_request(
+            'POST', '/v1/jobs/{job_id}/runs/{run_id}/actions/stop'.format(job_id=job_id, run_id=run_id)
+        )
+        return response
 
     def ping(self):
         response = self._do_request('GET', '/ping')

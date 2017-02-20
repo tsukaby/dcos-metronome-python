@@ -46,6 +46,8 @@ labels {
 Create job
 
 ```python
+>>> from google.protobuf.json_format import Parse
+>>> from metronome.models import JobSpec
 >>> json_text = """{"description":"desc","id":"example","labels":{},"run":{"artifacts":[],"cmd":"example","cpus":0.1,"disk":0,"env":{},"maxLaunchDelay":3600,"mem":32,"restart":{"activeDeadlineSeconds":120,"policy":"NEVER"},"volumes":[]}}"""
 >>> job = Parse(json_text, JobSpec())
 >>> c.create_job(job)
@@ -80,12 +82,18 @@ run {
 - run_job
 - list_runs
 - get_run
-- stop_job
+- stop_run
 - ping
 
 See following code for details.
 
 [client.py](metronome/client.py)
+
+***Not implemented (TODO)***
+
+- /v1/metrics (GET)
+- /v0/scheduled-jobs (POST)
+- /v0/scheduled-jobs/{jobId} (PUT)
 
 ## Development
 

@@ -67,6 +67,7 @@ message ScheduleSpec {
   }
   ConcurrencyPolicy concurrencyPolicy = 5;
   bool enabled = 6;
+  string nextRunAt = 7;
 }
 
 message JobSpec {
