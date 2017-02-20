@@ -8,7 +8,7 @@ if sys.version_info >= (3,):
 
 setup(
     name='dcos-metronome',
-    version='0.0.3',
+    version='0.1.0',
     description='Metronome Client Library',
     long_description="""Python interface to the DC/OS Metronome REST API.""",
     author='Shuya Tsukamoto',
@@ -19,7 +19,7 @@ setup(
     license='MIT',
     platforms='Posix; MacOS X; Windows',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
