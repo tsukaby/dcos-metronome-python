@@ -1,9 +1,11 @@
 import time
 from behave import when, then
-from google.protobuf.json_format import Parse
-
-from metronome import models
 from metronome.exceptions import MetronomeHttpError
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 
 def base_job():
@@ -32,15 +34,14 @@ def base_job():
   }
 }
     """
-    job = Parse(json_str, models.JobSpec())
-    return job
+    return json_str
 
 
 @when(u'we create a run')
 def step_impl(context):
     job = base_job()
-    context.client.create_job(job=job)
-    run = context.client.run_job(job_id=job.id)
+    context.client.create_job(json_text=job)
+    run = context.client.run_job(job_id=json.loads(job)['id'])
     context.run_ids = {'we_create_a_run': run.id}
 
 
@@ -48,20 +49,20 @@ def step_impl(context):
 def step_impl(context):
     job = base_job()
     run_id = context.run_ids['we_create_a_run']
-    actual = context.client.get_run(job_id=job.id, run_id=run_id)
+    actual = context.client.get_run(job_id=json.loads(job)['id'], run_id=run_id)
     assert run_id == actual.id
 
 
 @when(u'we stop a run')
 def step_impl(context):
     job = base_job()
-    context.client.create_job(job=job)
-    run = context.client.run_job(job_id=job.id)
+    context.client.create_job(json_text=job)
+    run = context.client.run_job(job_id=json.loads(job)['id'])
     context.run_ids = {'we_stop_a_run': run.id}
     time.sleep(5)
     print('debug')
-    print(context.client.list_runs(job_id=job.id))
-    context.client.stop_run(job_id=job.id, run_id=run.id)
+    print(context.client.list_runs(job_id=json.loads(job)['id']))
+    context.client.stop_run(job_id=json.loads(job)['id'], run_id=run.id)
 
 
 @then(u'we should see the stopped run via the metronome api')
@@ -71,7 +72,7 @@ def step_impl(context):
 
     expected = 'Job Run not found'
     try:
-        context.client.get_run(job_id=job.id, run_id=run_id)
+        context.client.get_run(job_id=json.loads(job)['id'], run_id=run_id)
         actual = 'No error'
     except MetronomeHttpError as e:
         actual = e.error_message

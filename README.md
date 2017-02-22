@@ -9,6 +9,13 @@ This library inspired by [thefactory/marathon-python](https://github.com/thefact
 
 * For Metronome 0.2.0, use at lease dcos-metronome-python 0.1.0
 
+#### Future works
+
+* Remove dependency to ProtoBuf3
+* Create simple entity classes and json parse process
+* Run integration tests on CircleCI with docker-compose
+* Create schedules at the same time when call `create_job`.
+
 ## Installation
 
 ```bash
@@ -46,11 +53,8 @@ labels {
 Create job
 
 ```python
->>> from google.protobuf.json_format import Parse
->>> from metronome.models import JobSpec
 >>> json_text = """{"description":"desc","id":"example","labels":{},"run":{"artifacts":[],"cmd":"example","cpus":0.1,"disk":0,"env":{},"maxLaunchDelay":3600,"mem":32,"restart":{"activeDeadlineSeconds":120,"policy":"NEVER"},"volumes":[]}}"""
->>> job = Parse(json_text, JobSpec())
->>> c.create_job(job)
+>>> c.create_job(json_text)
 id: "example"
 description: "desc"
 run {

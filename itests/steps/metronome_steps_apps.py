@@ -1,7 +1,7 @@
 import copy
 
 from behave import when, then
-from google.protobuf.json_format import Parse
+from google.protobuf.json_format import MessageToJson
 
 from metronome import models
 from metronome.exceptions import MetronomeHttpError
@@ -31,8 +31,7 @@ def step_impl(context):
   }
 }
     """
-    job = Parse(request, models.JobSpec())
-    context.client.create_job(job=job)
+    context.client.create_job(json_text=request)
 
 
 @then(u'we should see the trivial job running via the metronome api')
@@ -99,8 +98,7 @@ def step_impl(context):
   }
 }
     """
-    job = Parse(request, models.JobSpec())
-    context.client.create_job(job=job)
+    context.client.create_job(json_text=request)
 
 
 @then(u'we should see the complex job running via the metronome api')
@@ -144,10 +142,11 @@ def step_impl(context):
 @then(u'we should update a above job via the metronome api')
 def step_impl(context):
     before = context.client.get_job(job_id='example.trivial')
-    for_update = copy.deepcopy([before])[0]
     expected = 'desc_updated'
-    for_update.description = expected
-    context.client.update_job(job_id=for_update.id, job=for_update)
+    tmp = copy.deepcopy([before])[0]
+    tmp.description = expected
+    for_update = MessageToJson(tmp, including_default_value_fields=True, preserving_proto_field_name=True)
+    context.client.update_job(job_id=tmp.id, json_text=for_update)
     actual = context.client.get_job(job_id='example.trivial')
 
     assert actual.description == expected

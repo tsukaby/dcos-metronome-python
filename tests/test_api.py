@@ -1,7 +1,6 @@
 import requests_mock
 from metronome import MetronomeClient
 from metronome import models
-from google.protobuf.json_format import Parse
 
 
 def test_create_job():
@@ -30,8 +29,7 @@ def test_create_job():
     with requests_mock.mock() as m:
         m.post('http://fake_server/v1/jobs', text=fake_response, status_code=201)
         mock_client = MetronomeClient(servers='http://fake_server')
-        job = Parse(request, models.JobSpec())
-        actual = mock_client.create_job(job=job)
+        actual = mock_client.create_job(json_text=request)
         expected = models.JobSpec()
         expected.description = 'desc'
         expected.id = 'example'
@@ -174,8 +172,7 @@ def test_create_schedule():
     with requests_mock.mock() as m:
         m.post('http://fake_server/v1/jobs/example/schedules', text=fake_response, status_code=201)
         mock_client = MetronomeClient(servers='http://fake_server')
-        schedule = Parse(request, models.ScheduleSpec())
-        actual = mock_client.create_schedule(job_id='example', schedule=schedule)
+        actual = mock_client.create_schedule(job_id='example', json_text=request)
         expected = models.ScheduleSpec()
         expected.id = 'everyminute'
         expected.cron = '* * * * *'
