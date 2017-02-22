@@ -1,6 +1,6 @@
 # dcos-metronome-python
 
-![Build Status](https://circleci.com/gh/tsukaby/dcos-metronome-python.svg?style=shield&circle-token=449ff532f9d0943476a054e97a29cb62b001442e)
+[![Build Status](https://circleci.com/gh/tsukaby/dcos-metronome-python.svg?style=shield&circle-token=449ff532f9d0943476a054e97a29cb62b001442e)](https://circleci.com/gh/tsukaby/dcos-metronome-python)
 
 Python client library for DC/OS Metronome.
 This library inspired by [thefactory/marathon-python](https://github.com/thefactory/marathon-python).
