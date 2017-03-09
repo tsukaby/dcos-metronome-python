@@ -136,8 +136,75 @@ def step_impl(context):
     volume.containerPath = '/mnt/test'
     volume.hostPath = '/etc/guest'
     volume.mode = volume.RW
-    print(actual)
-    print(expected)
+    assert actual == expected
+
+
+@when(u'we create a new job with disk value at zero')
+def step_impl(context):
+    request = """
+{
+  "description": "desc",
+  "id": "example.disk-zero",
+  "labels": {},
+  "run": {
+    "artifacts": [],
+    "cmd": "echo",
+    "args": ["hello"],
+    "cpus": 0.1,
+    "disk": 0,
+    "maxLaunchDelay": 3600,
+    "mem": 32,
+    "restart": {
+      "activeDeadlineSeconds": 120,
+      "policy": "NEVER"
+    },
+    "user": "root",
+    "volumes": []
+  }
+}
+    """
+    job = Parse(request, models.JobSpec())
+    context.client.create_job(job=job)
+
+
+@then(u'we should see the job running with disk value at zero via the metronome api')
+def step_impl(context):
+    actual = context.client.get_job(job_id='example.disk-zero').run.disk.value
+    expected = 0
+    assert actual == expected
+
+
+@when(u'we create a new job without cmd field')
+def step_impl(context):
+    request = """
+{
+  "description": "desc",
+  "id": "example.cmd-empty",
+  "labels": {},
+  "run": {
+    "artifacts": [],
+    "args": ["hello"],
+    "cpus": 0.1,
+    "disk": 100,
+    "maxLaunchDelay": 3600,
+    "mem": 32,
+    "restart": {
+      "activeDeadlineSeconds": 120,
+      "policy": "NEVER"
+    },
+    "user": "root",
+    "volumes": []
+  }
+}
+    """
+    job = Parse(request, models.JobSpec())
+    context.client.create_job(job=job)
+
+
+@then(u'we should see the job running without cmd field via the metronome api')
+def step_impl(context):
+    actual = context.client.get_job(job_id='example.cmd-empty').run.cmd
+    expected = ''
     assert actual == expected
 
 

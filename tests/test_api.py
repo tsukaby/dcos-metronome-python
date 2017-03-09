@@ -38,7 +38,7 @@ def test_create_job():
         run = expected.run
         run.cmd = 'example'
         run.cpus = 0.1
-        run.disk = 0
+        run.disk.value = 0
         run.maxLaunchDelay = 3600
         run.mem = 32.0
         restart = run.restart
@@ -81,7 +81,7 @@ def test_list_job():
         run = expected[0].run
         run.cmd = 'example'
         run.cpus = 0.1
-        run.disk = 0
+        run.disk.value = 0
         run.maxLaunchDelay = 3600
         run.mem = 32.0
         restart = run.restart
@@ -135,7 +135,7 @@ def test_get_job():
         run.cmd = 'example'
         run.cpus = 0.1
         run.mem = 32.0
-        run.disk = 0
+        run.disk.value = 0
         run.docker.image = 'foo'
         run.env['key1'] = 'val1'
         run.maxLaunchDelay = 3600
