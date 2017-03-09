@@ -7,7 +7,7 @@ This library inspired by [thefactory/marathon-python](https://github.com/thefact
 
 #### Compatibility
 
-* For Metronome 0.2.0, use at lease dcos-metronome-python 0.2.0
+* For Metronome 0.2.0, use at least dcos-metronome-python 0.3.0
 
 #### Future works
 
