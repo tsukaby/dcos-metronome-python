@@ -10,7 +10,7 @@ import requests.exceptions
 import metronome
 from .models import JobSpec, ScheduleSpec, JobRun
 from .exceptions import MetronomeError, MetronomeHttpError, NotFoundError, InternalServerError
-from google.protobuf.json_format import Parse
+from google.protobuf.json_format import Parse, MessageToJson
 
 
 class MetronomeClient(object):
@@ -95,8 +95,9 @@ class MetronomeClient(object):
 
         return response
 
-    def create_job(self, json_text):
-        response = self._do_request('POST', '/v1/jobs', data=json_text)
+    def create_job(self, job):
+        data = MessageToJson(job, including_default_value_fields=True, preserving_proto_field_name=True)
+        response = self._do_request('POST', '/v1/jobs', data=data)
         if response.status_code == 201:
             return self._parse_response(response, JobSpec)
         else:
@@ -123,8 +124,9 @@ class MetronomeClient(object):
         response = self._do_request('GET', '/v1/jobs/{job_id}'.format(job_id=job_id), params=params)
         return self._parse_response(response, JobSpec)
 
-    def update_job(self, job_id, json_text):
-        response = self._do_request('PUT', '/v1/jobs/{job_id}'.format(job_id=job_id), data=json_text)
+    def update_job(self, job_id, job):
+        data = MessageToJson(job, including_default_value_fields=True, preserving_proto_field_name=True)
+        response = self._do_request('PUT', '/v1/jobs/{job_id}'.format(job_id=job_id), data=data)
         if response.status_code == 200:
             return self._parse_response(response, JobSpec)
         else:
@@ -137,8 +139,9 @@ class MetronomeClient(object):
         response = self._do_request('DELETE', '/v1/jobs/{job_id}'.format(job_id=job_id), params=params)
         return response
 
-    def create_schedule(self, job_id, json_text):
-        response = self._do_request('POST', '/v1/jobs/{job_id}/schedules'.format(job_id=job_id), data=json_text)
+    def create_schedule(self, job_id, schedule):
+        data = MessageToJson(schedule, including_default_value_fields=True, preserving_proto_field_name=True)
+        response = self._do_request('POST', '/v1/jobs/{job_id}/schedules'.format(job_id=job_id), data=data)
         if response.status_code == 201:
             return self._parse_response(response, ScheduleSpec)
         else:
@@ -157,11 +160,10 @@ class MetronomeClient(object):
         )
         return self._parse_response(response, ScheduleSpec)
 
-    def update_schedule(self, job_id, schedule_id, json_text):
+    def update_schedule(self, job_id, schedule_id, schedule):
+        data = MessageToJson(schedule, including_default_value_fields=True, preserving_proto_field_name=True)
         response = self._do_request(
-            'PUT',
-            '/v1/jobs/{job_id}/schedules/{schedule_id}'.format(job_id=job_id, schedule_id=schedule_id),
-            data=json_text
+            'PUT', '/v1/jobs/{job_id}/schedules/{schedule_id}'.format(job_id=job_id, schedule_id=schedule_id), data=data
         )
         if response.status_code == 200:
             return self._parse_response(response, ScheduleSpec)

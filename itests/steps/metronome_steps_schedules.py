@@ -1,10 +1,7 @@
+from metronome import models
 from metronome.exceptions import MetronomeHttpError
 from behave import given, when, then
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+from google.protobuf.json_format import Parse
 
 
 def base_job():
@@ -33,7 +30,8 @@ def base_job():
   }
 }
     """
-    return json_str
+    job = Parse(json_str, models.JobSpec())
+    return job
 
 
 def base_schedule():
@@ -47,45 +45,39 @@ def base_schedule():
   "timezone": "America/Chicago"
 }
     """
-    return json_str
+    schedule = Parse(json_str, models.ScheduleSpec())
+    return schedule
 
 
 @when(u'we create a schedule')
 def step_impl(context):
     job = base_job()
-    context.client.create_job(json_text=job)
+    context.client.create_job(job=job)
     schedule = base_schedule()
-    context.client.create_schedule(job_id=json.loads(job)['id'], json_text=schedule)
+    context.client.create_schedule(job_id=job.id, schedule=schedule)
 
 
 @then(u'we should see the schedule via the metronome api')
 def step_impl(context):
-    job = base_job()
-    schedule = base_schedule()
-    actual = context.client.get_schedule(job_id=json.loads(job)['id'], schedule_id=json.loads(schedule)['id']).id
-    expected = json.loads(schedule)['id']
+    actual = context.client.get_schedule(job_id=base_job().id, schedule_id=base_schedule().id).id
+    expected = base_schedule().id
     assert expected == actual
 
 
 @when(u'we update a schedule')
 def step_impl(context):
     job = base_job()
-    context.client.create_job(json_text=job)
+    context.client.create_job(job=job)
     schedule = base_schedule()
-    context.client.create_schedule(job_id=json.loads(job)['id'], json_text=schedule)
-    tmp = json.loads(base_schedule())
-    tmp['cron'] = '0 * * * *'
-    schedule_for_update = json.dumps(tmp)
-    context.client.update_schedule(
-        job_id=json.loads(job)['id'], schedule_id=json.loads(schedule)['id'], json_text=schedule_for_update
-    )
+    context.client.create_schedule(job_id=job.id, schedule=schedule)
+    schedule_for_update = base_schedule()
+    schedule_for_update.cron = '0 * * * *'
+    context.client.update_schedule(job_id=job.id, schedule_id=schedule.id, schedule=schedule_for_update)
 
 
 @then(u'we should see the updated schedule via the metronome api')
 def step_impl(context):
-    job = base_job()
-    schedule = base_schedule()
-    actual = context.client.get_schedule(job_id=json.loads(job)['id'], schedule_id=json.loads(schedule)['id']).cron
+    actual = context.client.get_schedule(job_id=base_job().id, schedule_id=base_schedule().id).cron
     expected = '0 * * * *'
     assert expected == actual
 
@@ -93,19 +85,17 @@ def step_impl(context):
 @when(u'we delete a schedule')
 def step_impl(context):
     job = base_job()
-    context.client.create_job(json_text=job)
+    context.client.create_job(job=job)
     schedule = base_schedule()
-    context.client.create_schedule(job_id=json.loads(job)['id'], json_text=schedule)
-    context.client.delete_schedule(job_id=json.loads(job)['id'], schedule_id=json.loads(schedule)['id'])
+    context.client.create_schedule(job_id=job.id, schedule=schedule)
+    context.client.delete_schedule(job_id=job.id, schedule_id=schedule.id)
 
 
 @then(u'we should not see the schedule via the metronome api')
 def step_impl(context):
     expected = 'Schedule not found'
     try:
-        job = base_job()
-        schedule = base_schedule()
-        context.client.get_schedule(job_id=json.loads(job)['id'], schedule_id=json.loads(schedule)['id'])
+        context.client.get_schedule(job_id=base_job().id, schedule_id=base_schedule().id)
         actual = 'No error'
     except MetronomeHttpError as e:
         actual = e.error_message
