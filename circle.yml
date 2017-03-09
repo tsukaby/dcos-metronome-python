@@ -9,6 +9,8 @@ dependencies:
     - curl -L -o ~/protoc.zip https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip
     - unzip ~/protoc.zip
     - sudo mv bin/protoc /usr/bin/
+    - sudo chmod o+r include/google/protobuf/*
+    - sudo cp -r include /usr/
   override:
     - pip install -r requirements.txt
     - pip install tox
