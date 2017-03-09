@@ -1,6 +1,7 @@
 import requests_mock
 from metronome import MetronomeClient
 from metronome import models
+from google.protobuf.json_format import Parse
 
 
 def test_create_job():
@@ -29,14 +30,15 @@ def test_create_job():
     with requests_mock.mock() as m:
         m.post('http://fake_server/v1/jobs', text=fake_response, status_code=201)
         mock_client = MetronomeClient(servers='http://fake_server')
-        actual = mock_client.create_job(json_text=request)
+        job = Parse(request, models.JobSpec())
+        actual = mock_client.create_job(job=job)
         expected = models.JobSpec()
         expected.description = 'desc'
         expected.id = 'example'
         run = expected.run
         run.cmd = 'example'
         run.cpus = 0.1
-        run.disk = 0
+        run.disk.value = 0
         run.maxLaunchDelay = 3600
         run.mem = 32.0
         restart = run.restart
@@ -79,7 +81,7 @@ def test_list_job():
         run = expected[0].run
         run.cmd = 'example'
         run.cpus = 0.1
-        run.disk = 0
+        run.disk.value = 0
         run.maxLaunchDelay = 3600
         run.mem = 32.0
         restart = run.restart
@@ -133,7 +135,7 @@ def test_get_job():
         run.cmd = 'example'
         run.cpus = 0.1
         run.mem = 32.0
-        run.disk = 0
+        run.disk.value = 0
         run.docker.image = 'foo'
         run.env['key1'] = 'val1'
         run.maxLaunchDelay = 3600
@@ -172,7 +174,8 @@ def test_create_schedule():
     with requests_mock.mock() as m:
         m.post('http://fake_server/v1/jobs/example/schedules', text=fake_response, status_code=201)
         mock_client = MetronomeClient(servers='http://fake_server')
-        actual = mock_client.create_schedule(job_id='example', json_text=request)
+        schedule = Parse(request, models.ScheduleSpec())
+        actual = mock_client.create_schedule(job_id='example', schedule=schedule)
         expected = models.ScheduleSpec()
         expected.id = 'everyminute'
         expected.cron = '* * * * *'

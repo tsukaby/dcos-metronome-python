@@ -1,6 +1,8 @@
 syntax = "proto3";
 package dcos.metronome;
 
+import "google/protobuf/wrappers.proto";
+
 option java_package = "dcos.metronome";
 option java_outer_classname = "Protos";
 
@@ -78,7 +80,7 @@ message JobSpec {
   message RunSpec {
     double cpus = 1;
     double mem = 2;
-    double disk = 3;
+    google.protobuf.DoubleValue disk = 3; // Prevent deletion when value is zero
     string cmd = 4;
     repeated string args = 5;
     string user = 6;
